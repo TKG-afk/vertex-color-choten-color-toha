@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#ffffff">
+  <title>バーテックスカラー（頂点カラー）とは？</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <div class="presentation" id="presentation">
+    <div class="frame" id="frame">
+      <main class="stage" id="stage" aria-label="バーテックスカラーの授業スライド">
+        <section class="slide cover" id="slide-01" aria-labelledby="title-01">
+          <div class="cover-copy">
+            <p class="chapter">専門学校国際理工カレッジ <span>／</span> ゲームクリエイター科 1年</p>
+            <h1 id="title-01">バーテックスカラー<br>（頂点カラー）とは？</h1>
+            <p class="subtitle">ゲームでの活用方法とMayaでの表示</p>
+            <p class="cover-question">キャラクターの輪郭線。<br>線の太さはどうやって変える？</p>
+            <p class="cover-meta">30分 <span></span> Autodesk Maya 2025</p>
+          </div>
+          <figure class="article-figure cover-figure">
+            <div class="article-image">
+              <img src="assets/game-watch-cover.jpg" width="800" height="450" alt="『ギルティギア』のキャラクターと輪郭線の仕組みを並べたCEDEC 2024の講演ビジュアル。">
+              <p class="image-fallback" hidden>画像を表示できません。下の出典から参照できます。</p>
+            </div>
+            <figcaption>出典　<a href="https://game.watch.impress.co.jp/img/gmw/docs/1617/901/html/0_o.jpg.html" target="_blank" rel="noopener noreferrer">GAME Watch（CEDEC 2024講演資料）</a></figcaption>
+          </figure>
+        </section>
+
+        <section class="slide" id="slide-02" aria-labelledby="title-02" hidden>
+          <header class="slide-heading"><p class="chapter">導入</p><h2 id="title-02">今日の授業で学ぶこと</h2></header>
+          <div class="agenda">
+            <article><p class="time">11分</p><h3>仕組みを知る</h3><ul><li>頂点カラーと補間</li><li>テクスチャとの違い</li><li>メリットと注意点</li></ul></article>
+            <article><p class="time">8分</p><h3>ゲーム事例を見る</h3><ul><li>見た目を変える用途</li><li>『ギルティギア』の輪郭線</li></ul></article>
+            <article><p class="time">9分</p><h3>Mayaで表示する</h3><ul><li>頂点カラーの表示と確認</li><li>表示できないときの対処</li><li>3問で振り返り</li></ul></article>
+          </div>
+          <p class="support">導入2分を含めて30分。</p>
+        </section>
+
+        <section class="slide" id="slide-03" aria-labelledby="title-03" hidden>
+          <header class="slide-heading"><p class="chapter">基礎</p><h2 id="title-03">バーテックスカラーとは？</h2></header>
+          <p class="lead">ポリゴンの<strong>頂点に色情報</strong>を持たせる仕組み。</p>
+          <div class="channels" aria-label="赤、緑、青、アルファの4チャンネル">
+            <div class="channel red"><b>R</b><span>赤</span></div>
+            <div class="channel green"><b>G</b><span>緑</span></div>
+            <div class="channel blue"><b>B</b><span>青</span></div>
+            <div class="channel alpha"><b>A</b><span>アルファ</span></div>
+          </div>
+          <div class="paired-notes">
+            <p><strong>RGB</strong> は赤・緑・青の3つの成分。成分の組み合わせで色を表す。</p>
+            <p><strong>A（アルファ）</strong> は必要に応じて追加する値。透明度や効果の強さなどに使える。</p>
+          </div>
+        </section>
+
+        <section class="slide" id="slide-04" aria-labelledby="title-04" hidden>
+          <header class="slide-heading"><p class="chapter">基礎</p><h2 id="title-04">頂点どうしの間は「補間」される</h2></header>
+          <div class="split interpolation-layout">
+            <div>
+              <ol class="steps compact">
+                <li><span><b>頂点に色を設定</b><small>三角形の角に赤・緑・青を置く。</small></span></li>
+                <li><span><b>面の途中の値を計算</b><small>近い頂点の色ほど強くなる。</small></span></li>
+                <li><span><b>グラデーションができる</b><small>この途中の値を求めることが補間。</small></span></li>
+              </ol>
+            </div>
+            <figure class="interpolation">
+              <div class="triangle-plot">
+                <canvas id="triangle-canvas" width="660" height="420" role="img" aria-label="上が青、左下が赤、右下が緑の三角形。面内の色は3頂点からの補間で変化する。"></canvas>
+                <span class="vertex-label vertex-b">B</span><span class="vertex-label vertex-r">R</span><span class="vertex-label vertex-g">G</span>
+                <span class="sample-point" id="sample-point" aria-hidden="true"></span>
+              </div>
+              <div class="sample-control">
+                <label for="sample-position">赤 → 緑の辺を調べる</label>
+                <input id="sample-position" type="range" min="0" max="100" value="50">
+                <output for="sample-position" id="sample-value">R 50%　G 50%　B 0%</output>
+              </div>
+            </figure>
+          </div>
+        </section>
+
+        <section class="slide" id="slide-05" aria-labelledby="title-05" hidden>
+          <header class="slide-heading"><p class="chapter">基礎</p><h2 id="title-05">頂点カラーとテクスチャの違い</h2></header>
+          <table class="comparison">
+            <thead><tr><th scope="col">比べる項目</th><th scope="col">頂点カラー</th><th scope="col">テクスチャ（表面に貼る画像）</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">保存場所</th><td>モデルの頂点データ</td><td>画像データの各画素</td></tr>
+              <tr><th scope="row">細かさ</th><td>頂点の配置と密度で決まる</td><td>画像の解像度や貼り方で決まる</td></tr>
+              <tr><th scope="row">UV展開</th><td>色を保存するのに不要</td><td>一般的な画像の貼り付けには必要</td></tr>
+              <tr><th scope="row">データ量</th><td>頂点数・チャンネル数・形式</td><td>解像度・チャンネル数・圧縮方式</td></tr>
+              <tr><th scope="row">主な用途</th><td>色の変化、効果の強さ</td><td>文字、模様、細かな質感</td></tr>
+            </tbody>
+          </table>
+          <p class="support">UVは画像を貼る位置を示す座標。どちらが軽いかは条件次第で、描画負荷には見た目の計算も関わる。</p>
+        </section>
+
+        <section class="slide" id="slide-06" aria-labelledby="title-06" hidden>
+          <header class="slide-heading"><p class="chapter">基礎</p><h2 id="title-06">頂点カラーのメリット</h2></header>
+          <dl class="feature-rows">
+            <div><dt>モデルに色を持たせる</dt><dd>木の根元を暗く、上部を明るくする。</dd></div>
+            <div><dt>UVなしで色を付けられる</dt><dd>試作の小物に、画像を用意せず色を置く。</dd></div>
+            <div><dt>シェーダーに値を渡せる</dt><dd>頂点カラーのRで光る強さを変える。</dd></div>
+            <div><dt>色を混ぜる範囲を指定できる</dt><dd>地面のGをマスクに使い、草と土を混ぜる。</dd></div>
+            <div><dt>作品に合った見た目を作れる</dt><dd>部位ごとに輪郭線の太さを変える。</dd></div>
+          </dl>
+          <p class="support"><strong>シェーダー</strong>は見た目を計算するプログラム。<strong>マスク</strong>は効果をかける場所や強さを示す値。</p>
+        </section>
+
+        <section class="slide" id="slide-07" aria-labelledby="title-07" hidden>
+          <header class="slide-heading"><p class="chapter">基礎</p><h2 id="title-07">頂点の配置が表現の細かさを決める</h2></header>
+          <div class="density-comparison" aria-label="同じ幅の面に、頂点2点と7点を置いた場合の比較">
+            <article class="density-sample">
+              <h3>頂点が少ない</h3>
+              <div class="density-strip sparse" aria-hidden="true"><i></i><i></i></div>
+              <p>両端の間で広く変化する。</p>
+            </article>
+            <article class="density-sample">
+              <h3>頂点が多い</h3>
+              <div class="density-strip dense" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+              <p>中央だけ明るく指定できる。</p>
+            </article>
+          </div>
+          <ul class="short-list">
+            <li>少ない頂点でも単純なグラデーションは作れる。複雑な濃淡や細かな模様には頂点の追加やテクスチャを検討する。</li>
+            <li>効果の強さなどに使う場合は、シェーダー側で値の読み方を設定する。</li>
+          </ul>
+        </section>
+
+        <section class="slide" id="slide-08" aria-labelledby="title-08" hidden>
+          <header class="slide-heading"><p class="chapter">ゲームでの活用</p><h2 id="title-08">ゲームでは何を制御する？</h2></header>
+          <dl class="feature-rows application-rows">
+            <div><dt>キャラクターの陰影</dt><dd>服の折れ目やあごの下をどれだけ暗くするか。</dd></div>
+            <div><dt>輪郭線の太さ</dt><dd>毛先や腕など、部位ごとに線をどれだけ太くするか。</dd></div>
+            <div><dt>テクスチャのブレンド</dt><dd>岩と苔など、2枚の画像をどんな割合で混ぜるか。</dd></div>
+            <div><dt>汚れや色の変化</dt><dd>壁のどの範囲をどれだけ汚すか。</dd></div>
+            <div><dt>特殊なシェーダー表現</dt><dd>旗や草のどの部分をどれだけ揺らすか。</dd></div>
+          </dl>
+          <p class="support">たとえば頂点カラーのRを <strong>0＝効果なし、1＝最大</strong> として読む。値の意味は制作者が決める。</p>
+        </section>
+
+        <section class="slide" id="slide-09" aria-labelledby="title-09" hidden>
+          <header class="slide-heading"><p class="chapter">ゲームでの活用</p><h2 id="title-09">実例『ギルティギア』シリーズ</h2></header>
+          <p class="photo-intro">アニメのような3DCGに、<strong>ペン画のような線の強弱</strong>を付ける。</p>
+          <div class="photo-grid">
+            <figure class="article-figure">
+              <div class="article-image">
+                <img src="assets/game-watch-outline-alpha.jpg" width="737" height="414" alt="横顔の輪郭線の太い部分と細い部分、および目の周りの輪郭線を示した講演スライド。">
+                <p class="image-fallback" hidden>画像を表示できません。下の出典から参照できます。</p>
+              </div>
+              <figcaption>
+                出典　<a href="https://game.watch.impress.co.jp/img/gmw/docs/1617/901/html/13_o.jpg.html" target="_blank" rel="noopener noreferrer">GAME Watch（CEDEC 2024講演資料）</a>
+                <p class="image-comment"><strong>顔の線</strong>　横顔の線幅を頂点カラーのアルファ値で調整する。</p>
+              </figcaption>
+            </figure>
+            <figure class="article-figure">
+              <div class="article-image">
+                <img src="assets/game-watch-outline-width.jpg" width="737" height="414" alt="毛先と小さな装飾では細い輪郭線、筋肉では太い線を示した講演スライド。">
+                <p class="image-fallback" hidden>画像を表示できません。下の出典から参照できます。</p>
+              </div>
+              <figcaption>
+                出典　<a href="https://game.watch.impress.co.jp/img/gmw/docs/1617/901/html/14_o.jpg.html" target="_blank" rel="noopener noreferrer">GAME Watch（CEDEC 2024講演資料）</a>
+                <p class="image-comment"><strong>部位ごとの強弱</strong>　毛先や装飾は細い線、筋肉は太い線で描く。</p>
+              </figcaption>
+            </figure>
+          </div>
+        </section>
+
+        <section class="slide" id="slide-10" aria-labelledby="title-10" hidden>
+          <header class="slide-heading"><p class="chapter">ゲームでの活用</p><h2 id="title-10">背面法で線を描き、頂点カラーで太さを調整</h2></header>
+          <p class="context-note"><b>記事で確認できる工夫</b>　背面法を使い、部位による線の強弱は頂点カラーで調整。距離や視野角にも別途対応する。</p>
+          <div class="split outline-layout">
+            <div>
+              <h3 class="minor-heading">輪郭線ができる流れ</h3>
+              <ol class="steps outline-steps">
+                <li><span>少し広げた裏側の面を元のモデルに重ねる。はみ出した部分が輪郭線に見える。</span></li>
+                <li><span>頂点カラーに太さを調整する値を設定する。</span></li>
+                <li><span>シェーダーが値を読み、裏側の面を広げる量に反映する。</span></li>
+                <li><span>はみ出す幅が変わり、線が太く／細く見える。</span></li>
+              </ol>
+            </div>
+            <figure class="article-figure">
+              <div class="article-image">
+                <img src="assets/game-watch-backface.jpg" width="737" height="414" alt="背面法の講演図。表面の外にはみ出す背面メッシュの部分を線として示している。">
+                <p class="image-fallback" hidden>画像を表示できません。下の出典から参照できます。</p>
+              </div>
+              <figcaption>
+                出典　<a href="https://game.watch.impress.co.jp/img/gmw/docs/1617/901/html/5_o.jpg.html" target="_blank" rel="noopener noreferrer">GAME Watch（CEDEC 2024講演資料）</a>
+                <p class="image-comment">右図の赤で示した部分が、カメラから見える輪郭線。</p>
+              </figcaption>
+            </figure>
+          </div>
+          <p class="source-line">出典　<a href="https://game.watch.impress.co.jp/docs/kikaku/1617901.html" target="_blank" rel="noopener noreferrer">GAME Watch（2024）</a> ／ <a href="https://cedec.cesa.or.jp/2024/session/detail/s6605513389324/" target="_blank" rel="noopener noreferrer">CEDEC 2024 講演情報</a></p>
+        </section>
+
+        <section class="slide" id="slide-11" aria-labelledby="title-11" hidden>
+          <header class="slide-heading"><p class="chapter">ゲームでの活用</p><h2 id="title-11">カメラが動いても線幅を安定させる</h2></header>
+          <p class="photo-intro"><strong>カメラの距離と視野角</strong>（映る範囲の広さ）に合わせて、押し出す量を調整する。</p>
+          <div class="photo-grid">
+            <figure class="article-figure">
+              <div class="article-image">
+                <img src="assets/game-watch-camera-distance.jpg" width="737" height="414" alt="距離で押し出しを調整しない場合、アップでは線が太く、引きでは細く見える例。">
+                <p class="image-fallback" hidden>画像を表示できません。下の出典から参照できます。</p>
+              </div>
+              <figcaption>
+                出典　<a href="https://game.watch.impress.co.jp/img/gmw/docs/1617/901/html/7_o.jpg.html" target="_blank" rel="noopener noreferrer">GAME Watch（CEDEC 2024講演資料）</a>
+                <p class="image-comment"><strong>距離の影響</strong>　同じ押し出し量のまま近づくと、線が太く見える。</p>
+              </figcaption>
+            </figure>
+            <figure class="article-figure">
+              <div class="article-image">
+                <img src="assets/game-watch-camera-fov.jpg" width="737" height="414" alt="距離で近づいた画面と視野角を狭めた画面を、線幅の調整後に比較した講演スライド。">
+                <p class="image-fallback" hidden>画像を表示できません。下の出典から参照できます。</p>
+              </div>
+              <figcaption>
+                出典　<a href="https://game.watch.impress.co.jp/img/gmw/docs/1617/901/html/12_o.jpg.html" target="_blank" rel="noopener noreferrer">GAME Watch（CEDEC 2024講演資料）</a>
+                <p class="image-comment"><strong>補正した例</strong>　距離や視野角が変わっても、線幅を保てる。</p>
+              </figcaption>
+            </figure>
+          </div>
+        </section>
+
+        <section class="slide" id="slide-12" aria-labelledby="title-12" hidden>
+          <header class="slide-heading"><p class="chapter">ゲームでの活用</p><h2 id="title-12">欲しい線だけを残す工夫</h2></header>
+          <p class="photo-intro">顔や衣装の動きも見ながら、<strong>部位ごとに線の出方</strong>を調整する。</p>
+          <div class="photo-grid three">
+            <figure class="article-figure">
+              <div class="article-image">
+                <img src="assets/game-watch-face-outline.jpg" width="737" height="414" alt="口元に出た余計な線が頂点カラー調整後に消えている比較。">
+                <p class="image-fallback" hidden>画像を表示できません。下の出典から参照できます。</p>
+              </div>
+              <figcaption>
+                出典　<a href="https://game.watch.impress.co.jp/img/gmw/docs/1617/901/html/17_o.jpg.html" target="_blank" rel="noopener noreferrer">GAME Watch（CEDEC 2024講演資料）</a>
+                <p class="image-comment"><strong>口元</strong><br>表情で出る余計な線を、頂点カラーで消す。</p>
+              </figcaption>
+            </figure>
+            <figure class="article-figure">
+              <div class="article-image">
+                <img src="assets/game-watch-cloth-outline.jpg" width="737" height="414" alt="布の裏側の輪郭線用メッシュが表に出る問題と、その調整後を比較した講演スライド。">
+                <p class="image-fallback" hidden>画像を表示できません。下の出典から参照できます。</p>
+              </div>
+              <figcaption>
+                出典　<a href="https://game.watch.impress.co.jp/img/gmw/docs/1617/901/html/19_o.jpg.html" target="_blank" rel="noopener noreferrer">GAME Watch（CEDEC 2024講演資料）</a>
+                <p class="image-comment"><strong>衣装の裏地</strong><br>線を描く面を奥へずらし、裏地の線が表に出るのを防ぐ。</p>
+              </figcaption>
+            </figure>
+            <figure class="article-figure">
+              <div class="article-image">
+                <img src="assets/game-watch-glove-outline.jpg" width="737" height="414" alt="手袋の開口部の輪郭線が明瞭になるように裏側を調整した例。">
+                <p class="image-fallback" hidden>画像を表示できません。下の出典から参照できます。</p>
+              </div>
+              <figcaption>
+                出典　<a href="https://game.watch.impress.co.jp/img/gmw/docs/1617/901/html/22_o.jpg.html" target="_blank" rel="noopener noreferrer">GAME Watch（CEDEC 2024講演資料）</a>
+                <p class="image-comment"><strong>手袋の開口部</strong><br>裏側の面を閉じ、開口部の輪郭線をきれいに出す。</p>
+              </figcaption>
+            </figure>
+          </div>
+        </section>
+
+        <section class="slide" id="slide-13" aria-labelledby="title-13" hidden>
+          <header class="slide-heading"><p class="chapter">Maya 2025 実習</p><h2 id="title-13">Mayaで頂点カラーを表示する</h2></header>
+          <div class="split maya-layout">
+            <ol class="steps maya-steps">
+              <li><span>頂点カラー付きのポリゴンモデルを用意する。</span></li>
+              <li><span>オブジェクトを選択する。</span></li>
+              <li><span>ビューにカーソルを置き、<kbd>5</kbd> でシェーディング表示にする。</span></li>
+              <li><span>モデリングの <strong>メッシュ表示</strong> を開く。</span></li>
+              <li><span><strong>表示カラー アトリビュートの切り替え</strong>で表示をオンにする。</span></li>
+              <li><span>モデル表面に色が見えることを確認する。</span></li>
+            </ol>
+            <figure class="menu-guide">
+              <figcaption>Maya 2025 公式資料に沿ったメニュー図</figcaption>
+              <div class="menu-block"><small>ビューのパネルメニュー</small><p>シェーディング <span>Shading</span></p><p>↳ すべてをスムーズ シェード <span>Smooth Shade All</span></p></div>
+              <div class="menu-block active-menu"><small>モデリングのメニューセット</small><p>メッシュ表示 <span>Mesh Display</span></p><p>↳ 表示カラー アトリビュートの切り替え <span>Toggle Display Colors Attribute</span></p></div>
+            </figure>
+          </div>
+          <p class="source-line">出典　Autodesk Maya 2025 ヘルプ「<a href="https://help.autodesk.com/cloudhelp/2025/JPN/Maya-Modeling/files/GUID-789B35EA-BDBE-4B82-81E3-75FB611FC96C.htm" target="_blank" rel="noopener noreferrer">頂点カラーを可視にする</a>」</p>
+        </section>
+
+        <section class="slide" id="slide-14" aria-labelledby="title-14" hidden>
+          <header class="slide-heading"><p class="chapter">Maya 2025 実習</p><h2 id="title-14">頂点カラーが表示されないとき</h2></header>
+          <dl class="feature-rows trouble-rows">
+            <div><dt>色データがない</dt><dd>メッシュ表示 → カラー セット エディタ <small>Mesh Display → Color Set Editor</small> でセットを確認する。色がなければカラーを割り当てる。</dd></div>
+            <div><dt>表示がオフ</dt><dd>カラーの表示 <small>Display Colors</small> をオンにする。既にオンの場合は維持する。</dd></div>
+            <div><dt>ワイヤーフレーム表示</dt><dd>ビューにカーソルを置き、<kbd>5</kbd> でシェーディング表示にする。</dd></div>
+            <div><dt>チャンネルが「なし」</dt><dd>メッシュ表示 → カラー マテリアル チャネル <small>Mesh Display → Color Material Channel</small> で、例えば「拡散（Diffuse）」を選ぶ。</dd></div>
+            <div><dt>材質・照明の影響</dt><dd>マテリアルのブレンド設定で「上書き（Overwrite）」を試す。照明の影響は「ライティング → ライトを使用しない」<small>Lighting → Use No Lights</small> で確認する。</dd></div>
+          </dl>
+          <p class="source-line">出典　Autodesk Maya 2025 ヘルプ「<a href="https://help.autodesk.com/cloudhelp/2025/JPN/Maya-Modeling/files/GUID-789B35EA-BDBE-4B82-81E3-75FB611FC96C.htm" target="_blank" rel="noopener noreferrer">頂点カラーを可視にする</a>」「<a href="https://help.autodesk.com/cloudhelp/2025/JPN/Maya-Modeling/files/GUID-0FC5F9C9-5C6A-4225-B0F3-353E7F61723D.htm" target="_blank" rel="noopener noreferrer">カラー セット エディタ オプション</a>」</p>
+        </section>
+
+        <section class="slide" id="slide-15" aria-labelledby="title-15" hidden>
+          <header class="slide-heading"><p class="chapter">まとめ</p><h2 id="title-15">頂点カラーでゲームの見た目を制御する</h2></header>
+          <div class="closing-grid">
+            <ul class="recap short-list">
+              <li>頂点カラーはモデルに保存する色情報。</li>
+              <li>頂点間の値は補間される。</li>
+              <li>シェーダーは頂点の値で色や効果を変えられる。</li>
+              <li>『ギルティギア』では輪郭線の太さを調整。</li>
+              <li>Mayaでモデル表面に表示して確認できる。</li>
+            </ul>
+            <div class="quiz">
+              <h3>理解度チェック</h3>
+              <ol class="steps">
+                <li><span>頂点カラーとテクスチャは、それぞれ色をどこに保存する？</span></li>
+                <li><span>『ギルティギア』で線を描く方法と、太さを調整するデータは？</span></li>
+                <li><span>Mayaで頂点カラー表示を切り替えるメニューは？</span></li>
+              </ol>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <nav class="controls" aria-label="スライド操作">
+      <div class="progress" id="progress" role="progressbar" aria-label="スライドの進み具合" aria-valuemin="0" aria-valuemax="15" aria-valuenow="1"><span></span></div>
+      <span class="deck-label">バーテックスカラー</span>
+      <div class="page-control">
+        <button id="previous" type="button" aria-label="前のスライド" title="前のスライド（←）">←</button>
+        <output id="slide-number" aria-live="polite" aria-label="スライド番号">01 / 15</output>
+        <button id="next" type="button" aria-label="次のスライド" title="次のスライド（→ または Space）">→</button>
+      </div>
+      <button id="fullscreen" class="fullscreen" type="button" aria-label="全画面表示" aria-pressed="false" title="全画面表示（F）"><span aria-hidden="true">⛶</span><span id="fullscreen-label">全画面</span></button>
+    </nav>
+    <p id="status" class="status" role="status" hidden></p>
+  </div>
+</body>
+</html>
